@@ -1,19 +1,18 @@
-
 import { CosmosClient } from "@azure/cosmos";
+import { BlobServiceClient } from "@azure/storage-blob";
 import { ApolloServer } from "apollo-server";
 import { Constants, KeyVaultConstants } from "./common/constants.js";
-import { KeyVaultManager } from "./services/keyVaultManagerService.js";
-import { BlobServiceClient } from "@azure/storage-blob";
-import { userResolvers } from "./resolvers/userResolver.js";
-import { categoryResolvers } from "./resolvers/categoryResolver.js";
-import { tagResolvers } from "./resolvers/tagResolver.js";
-import { promptResolvers } from "./resolvers/promptResolver.js";
-import { topicResolvers } from "./resolvers/topicResolver.js";
-import { messageResolvers } from "./resolvers/messageResolver.js";
-import { getFileContent, getSignedUrlForDownload, presignedUrl } from "./utils/generalUtils.js";
-import { verifyToken } from "./utils/authUtils.js";
 import { typeDefs } from "./common/typedefs.js";
-import { getUserByID } from "./dataAccess/userRepository.js";
+import { getUserByEmail } from "./dataAccess/userRepository.js";
+import { categoryResolvers } from "./resolvers/categoryResolver.js";
+import { messageResolvers } from "./resolvers/messageResolver.js";
+import { promptResolvers } from "./resolvers/promptResolver.js";
+import { tagResolvers } from "./resolvers/tagResolver.js";
+import { topicResolvers } from "./resolvers/topicResolver.js";
+import { userResolvers } from "./resolvers/userResolver.js";
+import { KeyVaultManager } from "./services/keyVaultManagerService.js";
+import { verifyToken } from "./utils/authUtils.js";
+import { getFileContent, getSignedUrlForDownload, presignedUrl } from "./utils/generalUtils.js";
 
 const resolvers = {
     User: {
@@ -95,9 +94,9 @@ export const init = async () => {
 
             if (token) {
                 try {
-                    const userId = await verifyToken(token.replace("Bearer ", ""));
-                    if (userId) {
-                        user = await getUserByID(containers.userContainer, userId);
+                    const decodedToken = await verifyToken(token.replace("Bearer ", ""));
+                    if (decodedToken) {
+                        user = await getUserByEmail({ container: userContainer }, decodedToken.payload.upn);
                     }
                 } catch (e) {
                     console.error("Token verification failed:", e);

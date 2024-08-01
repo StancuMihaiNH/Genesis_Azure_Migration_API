@@ -1,6 +1,6 @@
-import { saveUser, createUser, getUsers, getUserByID, getUserByEmail, deleteUser } from "../dataAccess/userRepository.js";
-import { hashPassword, validateEmail, validatePassword, comparePassword, generateToken, isAdministrator } from "../utils/authUtils.js";
-import { getSignedUrlForDownload, getContainer } from "../utils/generalUtils.js";
+import { createUser, deleteUser, getUserByEmail, getUserByID, getUsers, saveUser } from "../dataAccess/userRepository.js";
+import { comparePassword, generateToken, hashPassword, isAdministrator, validateEmail, validatePassword } from "../utils/authUtils.js";
+import { getContainer, getSignedUrlForDownload } from "../utils/generalUtils.js";
 
 export const userQueryResolvers = {
     viewer: async (parent, args, context) => {
@@ -87,7 +87,10 @@ export const userMutationResolvers = {
             user.password = hashPassword(newPassword);
         }
         if (input.email && input.email !== user.email) {
-            if (!validateEmail(input.email)) throw new Error("Invalid email");
+            if (!validateEmail(input.email)) {
+                throw new Error("Invalid email");
+            }
+
             user.email = input.email.toLowerCase();
             const findByEmail = await getUserByEmail({ ...context, container: getContainer('USER', context.containers) }, user.email);
             if (findByEmail && findByEmail.id !== user.id) throw new Error("Email already in use");
