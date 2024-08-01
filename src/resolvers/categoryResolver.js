@@ -1,4 +1,4 @@
-import { addCategory, editCategory, deleteCategory, getCategories, getCategory } from "../dataAccess/categoryRepository.js";
+import { addCategory, deleteCategory, editCategory, getCategories, getCategory } from "../dataAccess/categoryRepository.js";
 import { getUserByID } from "../dataAccess/userRepository.js";
 import { isAdministrator } from "../utils/authUtils.js";
 import { getContainer } from "../utils/generalUtils.js";

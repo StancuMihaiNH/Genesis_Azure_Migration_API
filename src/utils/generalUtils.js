@@ -1,7 +1,7 @@
-import { ulid } from "ulid";
-import { KeyVaultManager } from "../services/keyVaultManagerService.js";
-import { KeyVaultConstants } from "../common/constants.js";
 import { BlobSASPermissions, generateBlobSASQueryParameters } from "@azure/storage-blob";
+import { ulid } from "ulid";
+import { Containers, KeyVaultConstants } from "../common/constants.js";
+import { KeyVaultManager } from "../services/keyVaultManagerService.js";
 
 const keyVaultManager = KeyVaultManager.getInstance();
 
@@ -85,17 +85,17 @@ export const uniqueIds = (ids) => {
 
 export const getContainer = (entityType, containers) => {
   switch (entityType) {
-    case 'CATEGORY':
+    case Containers.CATEGORY:
       return containers.categoryContainer;
-    case 'MESSAGE':
+    case Containers.MESSAGE:
       return containers.messageContainer;
-    case 'PROMPT':
+    case Containers.PROMPT:
       return containers.promptContainer;
-    case 'TAG':
+    case Containers.TAG:
       return containers.tagContainer;
-    case 'TOPIC':
+    case Containers.TOPIC:
       return containers.topicContainer;
-    case 'USER':
+    case Containers.USER:
       return containers.userContainer;
     default:
       throw new Error(`Unknown entity type: ${entityType}`);

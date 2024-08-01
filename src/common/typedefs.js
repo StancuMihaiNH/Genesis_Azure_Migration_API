@@ -21,12 +21,9 @@ type User {
     updatedAt: Int
 }
 input UpdateUserInput {
-    email:String
     name: String
     phone: String
     avatar: String
-    currentPassword: String
-    newPassword: String
     role: UserRole
 }
 type Source {
@@ -172,10 +169,8 @@ type Mutation {
     createMessage(topicId: ID, input: CreateMessageInput): Message
     updateMessage(topicId: ID, messageId: ID, input: UpdateMessageInput): Message
     updateUser(id: ID, input: UpdateUserInput): User
-    createUser(name: String, email: String, password: String): User
+    createUser(name: String, email: String): User
     deleteUser(id: ID): Boolean
-    register(name: String,email: String, password: String): Viewer
-    login(email: String, password: String): Viewer
     updateMyAccount(input: UpdateUserInput): Viewer
     presignedUploadUrl(filename: String, contentType: String, prefix: String): PresignedUploadUrlResponse
     createTag(input: TagInput): Tag

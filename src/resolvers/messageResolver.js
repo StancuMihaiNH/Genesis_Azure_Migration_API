@@ -1,4 +1,5 @@
-import { createMessage, updateMessage, deleteMessages, getMessage, getTopicMessages } from "../dataAccess/messageRepository.js";
+import { Containers } from "../common/constants.js";
+import { createMessage, deleteMessages, getMessage, getTopicMessages, updateMessage } from "../dataAccess/messageRepository.js";
 import { getContainer } from "../utils/generalUtils.js";
 
 export const messageQueryResolvers = {
@@ -8,7 +9,7 @@ export const messageQueryResolvers = {
             throw new Error("Unauthorized");
         }
 
-        return await getTopicMessages({ ...context, container: getContainer('MESSAGE', context.containers) }, topicId, nextToken);
+        return await getTopicMessages({ ...context, container: getContainer(Containers.MESSAGE, context.containers) }, topicId, nextToken);
     }
 };
 
@@ -19,7 +20,7 @@ export const messageMutationResolvers = {
             throw new Error("Unauthorized");
         }
 
-        return await createMessage({ ...context, container: getContainer('MESSAGE', context.containers) }, topicId, input);
+        return await createMessage({ ...context, container: getContainer(Containers.MESSAGE, context.containers) }, topicId, input);
     },
     updateMessage: async (parent, { topicId, messageId, input }, context) => {
         const { user } = context;
@@ -27,19 +28,19 @@ export const messageMutationResolvers = {
             throw new Error("Unauthorized");
         }
 
-        const message = await getMessage({ ...context, container: getContainer('MESSAGE', context.containers) }, topicId, messageId);
+        const message = await getMessage({ ...context, container: getContainer(Containers.MESSAGE, context.containers) }, topicId, messageId);
         if (!message) {
             throw new Error("Message not found");
         }
 
         const updateValues = { ...message, ...input };
-        const updated = await updateMessage({ ...context, container: getContainer('MESSAGE', context.containers) }, topicId, messageId, updateValues);
+        const updated = await updateMessage({ ...context, container: getContainer(Container.MESSAGE, context.containers) }, topicId, messageId, updateValues);
 
         if (message.role === "user") {
             let messages = [];
             let nextToken = null;
             do {
-                const response = await getTopicMessages({ ...context, container: getContainer('MESSAGE', context.containers) }, topicId, nextToken);
+                const response = await getTopicMessages({ ...context, container: getContainer(Containers.MESSAGE, context.containers) }, topicId, nextToken);
                 messages = messages.concat(response.items);
                 nextToken = response.nextToken;
             } while (nextToken);
@@ -57,7 +58,7 @@ export const messageMutationResolvers = {
             });
 
             if (batchDelete.length > 0) {
-                await deleteMessages({ ...context, container: getContainer('MESSAGE', context.containers) }, topicId, batchDelete);
+                await deleteMessages({ ...context, container: getContainer(Containers.MESSAGE, context.containers) }, topicId, batchDelete);
             }
         }
         return updated;

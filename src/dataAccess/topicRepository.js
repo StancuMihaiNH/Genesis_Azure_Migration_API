@@ -26,15 +26,29 @@ export const createTopic = async (ctx, { name, description, tagIds }) => {
 export const updateTopic = async (ctx, id, input) => {
     const { user, container } = ctx;
     const unix = getUnixTime(new Date());
+
+    const { resources: items } = await container.items.query({
+        query: "SELECT * FROM c WHERE c.PK = @pk AND c.SK = @sk",
+        parameters: [
+            { name: "@pk", value: `USER#${user.id}` },
+            { name: "@sk", value: `TOPIC#${id}` }
+        ],
+    }).fetchAll();
+
+    if (items.length === 0) {
+        throw new Error("Topic not found");
+    }
+
+    const existingTopic = items[0];
+
     const item = {
-        PK: `USER#${user.id}`,
-        SK: `TOPIC#${id}`,
-        id,
+        ...existingTopic,
         ...input,
         updatedAt: unix,
     };
 
     await container.items.upsert(item);
+
     return item;
 };
 
@@ -98,4 +112,16 @@ export const unpinTopic = async (ctx, topic) => {
     await container.items.upsert(topic);
 
     return topic;
+};
+
+
+export const getTopicsByTag = async (ctx, tagId) => {
+    const { container } = ctx;
+
+    const querySpec = {
+        query: `SELECT c FROM c JOIN tag IN c.tags WHERE tag.id = '${tagId}'`,
+    };
+
+    const { resources: topics } = await container.items.query(querySpec).fetchAll();
+    return topics.map(topic => topic.c);
 };

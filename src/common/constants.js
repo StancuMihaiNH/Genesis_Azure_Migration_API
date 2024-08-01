@@ -9,3 +9,12 @@ export const Constants = {
     STORAGE_CONTAINER_NAME: 'storageContainerName',
     KEY_VAULT_NAME: 'nh-aicoe-kv'
 };
+
+export const Containers = {
+    CATEGORY: 'CATEGORY',
+    MESSAGE: 'MESSAGE',
+    PROMPT: 'PROMPT',
+    TAG: 'TAG',
+    TOPIC: 'TOPIC',
+    USER: 'USER'
+};

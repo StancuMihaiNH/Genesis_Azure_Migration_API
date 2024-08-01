@@ -1,6 +1,6 @@
 import { getUnixTime } from "date-fns";
 import { ulid } from "ulid";
-import { hashPassword, validateEmail, validatePassword } from "../utils/authUtils.js";
+import { validateEmail } from "../utils/authUtils.js";
 
 export const saveUser = async (ctx, user) => {
     const { container } = ctx;
@@ -13,9 +13,10 @@ export const saveUser = async (ctx, user) => {
     });
 };
 
-export const createUser = async (ctx, { name, email, password }) => {
-    if (!validateEmail(email)) throw new Error("Invalid email");
-    if (!validatePassword(password)) throw new Error("Password must be at least 5 characters long");
+export const createUser = async (ctx, { name, email }) => {
+    if (!validateEmail(email)) {
+        throw new Error("Invalid email");
+    }
 
     const { container } = ctx;
     const id = ulid();
@@ -31,7 +32,6 @@ export const createUser = async (ctx, { name, email, password }) => {
         name,
         role: "admin",
         entity: "USER",
-        password: hashPassword(password),
         createdAt: unix,
         updatedAt: unix,
     };
@@ -68,8 +68,8 @@ export const getUserByID = async (container, id) => {
     if (!container) {
         throw new Error("Container is undefined");
     }
-    const containerItems = container.items ? container.items : container.container.items;
 
+    const containerItems = container.items ? container.items : container.container.items;
     if (!containerItems) {
         throw new Error("Items are undefined");
     }

@@ -62,3 +62,41 @@ export const getTag = async (ctx, id) => {
 
     return items.length > 0 ? items[0] : null;
 };
+
+export const updateTopicTags = async (ctx, id, updatedTags) => {
+    const { user, container } = ctx;
+    const unix = getUnixTime(new Date());
+
+    const { resources: items } = await container.items.query({
+        query: "SELECT * FROM c WHERE c.PK = @pk AND c.SK = @sk",
+        parameters: [
+            { name: "@pk", value: `USER#${user.id}` },
+            { name: "@sk", value: `TOPIC#${id}` }
+        ],
+    }).fetchAll();
+
+    if (items.length === 0) {
+        throw new Error("Topic not found");
+    }
+
+    const existingTopic = items[0];
+
+    const item = {
+        ...existingTopic,
+        tags: updatedTags,
+        updatedAt: unix,
+    };
+
+    await container.items.upsert(item);
+
+    return item;
+};
+
+export const getTagsByCategory = async (ctx, categoryId) => {
+    const { container } = ctx;
+
+    const querySpec = { query: `SELECT * FROM c WHERE c.categoryId = '${categoryId}'` };
+
+    const { resources: tags } = await container.items.query(querySpec).fetchAll();
+    return tags;
+};
