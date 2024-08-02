@@ -54,6 +54,11 @@ export const deleteMessages = async (ctx, topicId, messageIds) => {
     await container.items.bulk(operations);
 };
 
+export const deleteMessage = async (ctx, category) => {
+    const { container } = ctx;
+    await container.item(category.id, category.PK).delete();
+};
+
 export const getMessage = async (ctx, topicId, messageId) => {
     const { container } = ctx;
     const { resources: items } = await container.items.query({
@@ -85,4 +90,16 @@ export const getTopicMessages = async (ctx, topicId, nextToken) => {
     };
 
     return result;
+};
+
+export const getMessagesByTopic = async (ctx, topicId) => {
+    const { container } = ctx;
+
+    const querySpec = {
+        query: `SELECT * FROM c WHERE c.topicId = @topicId`,
+        parameters: [{ name: '@topicId', value: topicId }]
+    };
+
+    const { resources: messages } = await container.items.query(querySpec).fetchAll();
+    return messages;
 };

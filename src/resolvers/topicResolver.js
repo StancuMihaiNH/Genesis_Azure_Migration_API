@@ -1,4 +1,5 @@
 import { Containers } from "../common/constants.js";
+import { deleteMessage, getMessagesByTopic } from "../dataAccess/messageRepository.js";
 import { getTag } from "../dataAccess/tagRepository.js";
 import { createTopic, deleteTopic, getTopic, getUserTopics, pinTopic, unpinTopic, updateTopic } from "../dataAccess/topicRepository.js";
 import { getContainer } from "../utils/generalUtils.js";
@@ -55,6 +56,12 @@ export const topicMutationResolvers = {
         }
 
         try {
+            const messages = await getMessagesByTopic({ ...context, container: getContainer(Containers.MESSAGE, context.containers) }, id);
+
+            for (const message of messages) {
+                await deleteMessage({ ...context, container: getContainer(Containers.MESSAGE, context.containers) }, message);
+            }
+
             await deleteTopic({ ...context, container: getContainer(Containers.TOPIC, context.containers) }, user.id, id);
             return true;
         } catch (err) {

@@ -5,22 +5,24 @@ import { KeyVaultManager } from "../services/keyVaultManagerService.js";
 
 const keyVaultManager = KeyVaultManager.getInstance();
 
-export const presignedUrl = async (context, { filename, contentType, prefix }) => {
-  const { blobServiceClient, user } = context;
-  const userPrefix = user ? user.id : "public";
-  const uploadPrefix = prefix || userPrefix;
-  const key = `${uploadPrefix}/${ulid()}_${filename}`;
-  const AZURE_STORAGE_CONNECTION_STRING = await keyVaultManager.getSecret(KeyVaultConstants.AZURE_STORAGE_CONTAINER_CONNECTION_STRING);
 
-  const containerClient = blobServiceClient.getContainerClient(AZURE_STORAGE_CONNECTION_STRING);
+export const presignedUrl = async (context, { filename }) => {
+  const { blobServiceClient } = context;
+  const safeFilename = filename.replace(/[^a-zA-Z0-9\-_\.]/g, "_"); // Replace invalid characters
+  const key = `${ulid()}_${safeFilename}`;
+
+  const containerName = "ai-coe-llm";
+  const containerClient = blobServiceClient.getContainerClient(containerName);
   const blockBlobClient = containerClient.getBlockBlobClient(key);
 
-  const url = await blockBlobClient.generateSasUrl({
+  const expiry = new Date(new Date().valueOf() + 3600 * 1000);
+
+  const sasUrl = await blockBlobClient.generateSasUrl({
     permissions: BlobSASPermissions.parse("w"),
-    expiresOn: new Date(new Date().valueOf() + 3600 * 1000),
+    expiresOn: expiry,
   });
 
-  return { key, url };
+  return { key, url: sasUrl };
 };
 
 export const getSignedUrlForDownload = async (context, key) => {

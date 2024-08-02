@@ -14,7 +14,7 @@ import { KeyVaultManager } from "./services/keyVaultManagerService.js";
 import { verifyToken } from "./utils/authUtils.js";
 import { getFileContent, getSignedUrlForDownload, presignedUrl } from "./utils/generalUtils.js";
 
-const resolvers = {
+export const resolvers = {
     User: {
         ...userResolvers.User
     },
