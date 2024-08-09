@@ -1,7 +1,7 @@
 import { CosmosClient } from "@azure/cosmos";
 import { BlobServiceClient } from "@azure/storage-blob";
 import { ApolloServer } from "apollo-server";
-import { Constants, KeyVaultConstants } from "./common/constants.js";
+import { KeyVaultConstants } from "./common/constants.js";
 import { typeDefs } from "./common/typedefs.js";
 import { getUserByEmail } from "./dataAccess/userRepository.js";
 import { categoryResolvers } from "./resolvers/categoryResolver.js";
@@ -56,13 +56,14 @@ const getSecrets = async (keyVaultManager) => {
     const COSMOS_DB_ENDPOINT = await keyVaultManager.getSecret(KeyVaultConstants.COSMOS_DB_ENDPOINT);
     const COSMOS_DB_KEY = await keyVaultManager.getSecret(KeyVaultConstants.COSMOS_DB_KEY);
     const AZURE_STORAGE_CONNECTION_STRING = await keyVaultManager.getSecret(KeyVaultConstants.AZURE_STORAGE_CONTAINER_CONNECTION_STRING);
-    const STORAGE_CONTAINER_NAME = Constants.STORAGE_CONTAINER_NAME;
+    const COSMOS_DB_NAME = await keyVaultManager.getSecret(KeyVaultConstants.COSMOS_DB_NAME);
 
     return {
         COSMOS_DB_ENDPOINT,
         COSMOS_DB_KEY,
         AZURE_STORAGE_CONNECTION_STRING,
-        STORAGE_CONTAINER_NAME
+        STORAGE_CONTAINER_NAME,
+        COSMOS_DB_NAME
     };
 };
 
@@ -70,11 +71,10 @@ export const init = async () => {
     const keyVaultManager = KeyVaultManager.getInstance();
     const secrets = await getSecrets(keyVaultManager);
 
-    const AZURE_STORAGE_CONNECTION_STRING = await keyVaultManager.getSecret(KeyVaultConstants.AZURE_STORAGE_CONTAINER_CONNECTION_STRING);
-    const blobServiceClient = BlobServiceClient.fromConnectionString(AZURE_STORAGE_CONNECTION_STRING);
+    const blobServiceClient = BlobServiceClient.fromConnectionString(secrets.AZURE_STORAGE_CONNECTION_STRING);
 
     const client = new CosmosClient({ endpoint: secrets.COSMOS_DB_ENDPOINT, key: secrets.COSMOS_DB_KEY });
-    const database = client.database("NHChat");
+    const database = client.database(secrets.COSMOS_DB_NAME);
 
     const tagContainer = database.container("Tag");
     const topicContainer = database.container("Topic");
