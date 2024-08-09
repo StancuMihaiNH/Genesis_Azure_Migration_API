@@ -6,10 +6,10 @@ import { KeyVaultManager } from "../services/keyVaultManagerService.js";
 const keyVaultManager = KeyVaultManager.getInstance();
 
 
-export const presignedUrl = async (context, { filename }) => {
+export const presignedUrl = async (context, { filename, contentType, prefix }) => {
   const { blobServiceClient } = context;
   const safeFilename = filename.replace(/[^a-zA-Z0-9\-_\.]/g, "_"); // Replace invalid characters
-  const key = `${ulid()}_${safeFilename}`;
+  const key = `${prefix}/${ulid()}_${safeFilename}`;
 
   const containerName = "ai-coe-llm";
   const containerClient = blobServiceClient.getContainerClient(containerName);
@@ -25,21 +25,40 @@ export const presignedUrl = async (context, { filename }) => {
   return { key, url: sasUrl };
 };
 
+// export const getSignedUrlForDownload = async (context, key) => {
+// const { blobServiceClient } = context;
+// const containerName = "ai-coe-llm";
+// const prefix = "north-highland/text/raw/";
+// const containerClient = blobServiceClient.getContainerClient(containerName);
+
+// const blobName = `${prefix}${key}`;
+
+// const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+
+// const sasOptions = {
+//   containerName: containerClient.containerName,
+//   blobName: blockBlobClient.name,
+//   permissions: BlobSASPermissions.parse("r"),
+//   expiresOn: new Date(new Date().valueOf() + 24 * 60 * 60 * 1000),
+// };
+
+// const sasToken = generateBlobSASQueryParameters(sasOptions, blobServiceClient.credential).toString();
+// const url = `${blockBlobClient.url}?${sasToken}`;
+// return url;
+
 export const getSignedUrlForDownload = async (context, key) => {
   const { blobServiceClient } = context;
   const containerName = "ai-coe-llm";
-  const prefix = "north-highland/text/raw/";
   const containerClient = blobServiceClient.getContainerClient(containerName);
 
-  const blobName = `${prefix}${key}`;
-
+  const blobName = key;
   const blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
   const sasOptions = {
     containerName: containerClient.containerName,
     blobName: blockBlobClient.name,
     permissions: BlobSASPermissions.parse("r"),
-    expiresOn: new Date(new Date().valueOf() + 24 * 60 * 60 * 1000),
+    expiresOn: new Date(new Date().valueOf() + 24 * 60 * 60 * 1000),  // URL valid for 24 hours
   };
 
   const sasToken = generateBlobSASQueryParameters(sasOptions, blobServiceClient.credential).toString();
